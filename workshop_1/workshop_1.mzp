@@ -1,0 +1,26 @@
+{
+    "openFiles": [
+        "temperature_nd.mzn",
+        "temperature.mzn",
+        "data/temp1.dzn",
+        "data/temp2.dzn",
+        "data/temp3.dzn",
+        "data/temp4.dzn",
+        "data/temp0.dzn"
+    ],
+    "openTab": 1,
+    "projectFiles": [
+        "data/temp0.dzn",
+        "data/temp1.dzn",
+        "data/temp2.dzn",
+        "data/temp3.dzn",
+        "data/temp4.dzn",
+        "temperature.mzc",
+        "temperature.mzn",
+        "temperature_nd.mzc",
+        "temperature_nd.mzn"
+    ],
+    "selectedBuiltinConfigId": "org.gecode.gecode",
+    "selectedBuiltinConfigVersion": "6.3.0",
+    "version": 106
+}

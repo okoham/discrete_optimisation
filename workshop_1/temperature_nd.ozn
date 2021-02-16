@@ -1,0 +1,5 @@
+string: _mzn_solution_checker = "@eAGFU02P2jAQvfMrRj4liqHAlkNBOSGkXakqUro9sWhlkgmxGmxqO0jbj//esRMIaLW7Ug7O\nvDczb57HUuV1UyAwq+sTmmeDBZZSSSe1sqPDb8UWA3nhuKKWuw+ibg7WCeMWA2GMeIENhbag\nSwiQQVFItbcdU0EKNaq9q6IzEi8GFt0l4X79IyPSZDRSr4ExIeNXyPJ+/bBctUmzi4w22ivJ\nc20dkTYTPuN3/Asfb9/kYlli3pE/8+GUD2fX9JsJHR6Oi4FDKp5XmP+MdlrXc9hx6wzNR+7E\nVEiWsANXoQJnGgSsLdJJ5PhMdurGRWyVZetsDixJLC8F4TGgKmS5GBB8bBy1LbsOnYO+c5ym\nKpnwiH0NMa/Kh9EI1xiENtWCtKC088VLbQ7CRZQUx0nCnhSL4dMTUE0Hf7r5gtVXd+gr0gwB\nnRRRgHno/o8YELWqAm0z3qZp2AceRRH77k83inoJZ37QEeThr0bU4DTs5YmcCmWAEdxlhMCN\nbAJEXUebawUVKTgfh5Ntcl40AmIo5AmmXppX9/iOLiIHXYLkywPhvYyqRTpPc22MX5ZW89Hg\nSerGejq7Hbwv0Ivrh/kLlffSe8uB4nG7LWy5zrLV8nEONCf1UrRVgm7FQqXrgjLbVWIP3zpi\nCPm9oXUNbxzACidt+UL/wdAUpvRKzq74Jb+jBzHj03H7UeJ/ESBUgg==\n";
+output ["temp = "++format(temp)++";\n"];
+function string : format(array [$U] of opt $T: x) = show(x);
+set of int: HOUR0 = 0..5;
+array [HOUR0] of int: temp:: mzn_check_var;
