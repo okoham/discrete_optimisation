@@ -15,12 +15,17 @@
 % Test out at least the values of d from 3 to 9.
 
 int: n;
-array[1..n] of var 0..3: x;
+set of int: INDEX = 1..n;
+array[INDEX] of var 0..3: x;
 
 constraint x[1] = 0;
 constraint x[n] = 3;
-constraint forall(i in 1..n-1)(x[i] + x[i+1] <= 3);
-constraint forall(i in 2..n-1 where i mod 3 = 0)(x[i] >= 2);
+constraint forall(i in 1..n-1)
+                 (x[i] + x[i+1] <= 3);
+% this is fine, too
+% constraint forall(i in 2..n-1 where i mod 3 = 0) 
+constraint forall(i in INDEX where i mod 3 = 0)
+                 (x[i] >= 2);
 
 solve maximize sum(x);
 

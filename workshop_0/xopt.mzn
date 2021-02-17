@@ -23,15 +23,16 @@
 % is divisible by 4?
 
 
-var 1..10: x;
-solve minimize pow(x - 7, 2);
+var 0..10: x;
+% solve minimize pow(x - 7, 2);
+solve minimize (x - 7) ^ 2;
 
 % model with mod function
-% constraint x mod 4 = 0;
+constraint x mod 4 = 0;
 
 % model without mod function. Choose a reasonable value for k
-var 1..3: k;
-constraint x = 4*k;
+% var 1..3: k;
+% constraint x = 4*k;
 
 
 output ["\(x)\n"];

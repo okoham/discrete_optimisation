@@ -9,3 +9,4 @@
 
 int: n;
 output ["\(n)\n"];
+% alternatively: output [show(n)];

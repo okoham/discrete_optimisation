@@ -25,4 +25,4 @@ constraint forall(i in 1..n-1)(x[i] <= x[i+1]);
 
 solve satisfy;
 
-output [show(x) ++ "\n"];
+output [show(x)];
