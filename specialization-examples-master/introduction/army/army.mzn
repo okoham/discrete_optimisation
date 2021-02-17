@@ -1,5 +1,4 @@
-solve maximize strength; 
-var int: strength = 6*F + 10*L + 8*Z + 40*J;  
+solve maximize 6*F + 10*L + 8*Z + 40*J;  
 
 int: budget = 10000;
 constraint 13*F + 21*L + 17*Z + 100*J <= budget;
@@ -9,4 +8,4 @@ var 0..400: L;
 var 0..500: Z;
 var 0..150: J;
 
-output ["F = \(F), L = \(L), Z = \(Z), J = \(J): \(strength)\n"];
+output ["F = \(F), L = \(L), Z = \(Z), J = \(J)\n"];
