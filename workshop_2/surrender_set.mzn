@@ -28,17 +28,14 @@ constraint card(party) >= l;
 constraint card(party) <= u;
 constraint not (dummy in party);
 
-% objective: minimum honor
-% how to calculate the minimum of a set while avoiding option types
-int: larger = max(honor) + 1;
-var int: obj = min(i in NEGOTIATOR)
-                  (if i in party then honor[i] else larger endif);
-
 % strength: sum of strength of negotiator pairs
-var int: strength = sum(i in NEGOTIATOR, j in NEGOTIATOR where i < j)
-                       ((i in party)*(j in party)*joint[i,j]);
-constraint strength >= m;
+constraint sum(i, j in party where i < j)(joint[i, j]) >= m;
 
-solve maximize obj;
+% objective: minimum honor 
+% with this way of modeling it, we get rid of the optionality problem
+var int: minhonor;
+constraint minhonor = min(i in NEGOTIATOR where i in party)(honor[i]);
 
-output ["party = \(party);\nobj = \(obj)"];
+solve maximize minhonor;
+
+output ["party = \(party);\nobj = \(minhonor)"];
