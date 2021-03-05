@@ -23,3 +23,63 @@ var STEP: len;
 array[STEP] of var LEGS: legs;
 array[STEP] of var ARMS: arms;
 array[STEP] of var FACE: face;
+
+% upper limits on how many times she can use the same move
+include "global_cardinality_low_up_closed.mzn";
+constraint global_cardinality_low_up_closed(legs, LEGS, [0 | i in LEGS], maxlegs);
+constraint global_cardinality_low_up_closed(arms, ARMS, [0 | i in ARMS], maxarms);
+constraint global_cardinality_low_up_closed(face, FACE, [0 | i in FACE], maxface);
+
+% She must prep before any leap. Directly after a spin she can only curtsey, prep or stand.
+% Directly after a leap she can only spin, waltz, or stand. She can waltz at most three times in a row.
+% She cannot prep directly after a curtsey. Finally, in between any waltz and a following curtsey there
+% must be a stand
+constraint forall(i in 2..maxlen)(legs[i] = leap -> legs[i-1] = prep);
+constraint forall(i in 1..maxlen-1)(legs[i] = spin -> legs[i+1] in {curtsey, prep, stand});
+constraint forall(i in 1..maxlen-1)(legs[i] = leap -> legs[i+1] in {spin, waltz, stand});
+constraint forall(i in 1..maxlen-3)(sum(j in 0..3)(legs[i+j] = waltz) <= 3);
+constraint forall(i in 1..maxlen-1)(legs[i] = curtsey -> legs[i+1] != prep);
+% TODO: stand btwn waltz and curtsey
+
+% She can beckon only directly after out or up (and hence not as the first move).
+% She can wrapped only directly after beckon or neutral, including the possibility that wrapped is the
+% first move (since the previous move can be considered neutral). She cannot do any of the two same
+% moves in a row except neutral.
+constraint arms[1] != beckon;
+constraint forall(i in 2..maxlen)(arms[i] = beckon -> arms[i-1] in {out, up});
+constraint forall(i in 2..maxlen)(arms[i] = wrapped -> arms[i-1] in {beckon, neutral});
+constraint forall(i in 1..maxlen-1)(arms[i+1] != arms[i] \/ arms[i+1] = neutral);
+
+% She cannot make more than two of the same gestures in a row except blank. She
+% cannot think directly after smile (ing) or batt (ing) her eyelids.
+constraint forall(i in 1..maxlen-1)(face[i+1] != face[i] \/ face[i+1] = blank);
+constraint forall(i in 1..maxlen-1)(face[i] in {smile, batt} -> face[i+1] != think);
+
+% The combination of her legs move and arms move at each step determines the value of her dance.
+var int: value = sum(i in STEP)(dance_value[legs[i], arms[i]]);
+
+% The combination of her arms move and facial gesture at each step determines the enticement that
+% she achieves.
+var int: enticement = sum(i in STEP)(entice_value[arms[i], face[i]]);
+
+% Some combinations of legs move and arms moves are impossible. Similarly some combinations
+% of arms move and face would be very off putting and hence must be avoided.
+constraint forall(i in STEP)(dance_value[legs[i], arms[i]] >= 0);
+constraint forall(i in STEP)(entice_value[arms[i], face[i]] >= 0);
+
+% After the dance ends she must stay in the base position stand, neutral, and blank.
+%constraint len < maxlen;
+constraint forall(i in len+1..maxlen)(legs[i] = stand);
+constraint forall(i in len+1..maxlen)(arms[i] = neutral);
+constraint forall(i in len+1..maxlen)(face[i] = blank);
+
+% Her aim is to maximize the seductive power of the dance, which is given by the value of the
+% dance, plus the enticements of the dance minus the boredom level of Lu Bu multiplied by the length
+% of the dance.
+var int: obj = value + enticement - boredom*len;
+solve maximize obj;
+
+% output
+output ["len = \(len);\nlegs = \(legs);\narms = \(arms);\nface = \(face);\nobj = \(obj);\n" ];
+
+
