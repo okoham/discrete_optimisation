@@ -56,16 +56,18 @@ constraint forall(i in 1..maxlen-1)(face[i+1] != face[i] \/ face[i+1] = blank);
 constraint forall(i in 1..maxlen-1)(face[i] in {smile, batt} -> face[i+1] != think);
 
 % The combination of her legs move and arms move at each step determines the value of her dance.
-var int: value = sum(i in STEP)(dance_value[legs[i], arms[i]]);
+int: vmax = max(dance_value);
+array[STEP] of var 0..vmax: value = [dance_value[legs[i], arms[i]] | i in STEP];
 
 % The combination of her arms move and facial gesture at each step determines the enticement that
 % she achieves.
-var int: enticement = sum(i in STEP)(entice_value[arms[i], face[i]]);
+int: emax = max(entice_value);
+array[STEP] of var 0..emax: enticement = [entice_value[arms[i], face[i]] | i in STEP];
 
 % Some combinations of legs move and arms moves are impossible. Similarly some combinations
 % of arms move and face would be very off putting and hence must be avoided.
-constraint forall(i in STEP)(dance_value[legs[i], arms[i]] >= 0);
-constraint forall(i in STEP)(entice_value[arms[i], face[i]] >= 0);
+%constraint forall(s in STEP)(dance_value[legs[s], arms[s]] >= 0);
+%constraint forall(s in STEP)(entice_value[arms[s], face[s]] >= 0);
 
 % After the dance ends she must stay in the base position stand, neutral, and blank.
 %constraint len < maxlen;
@@ -76,10 +78,10 @@ constraint forall(i in len+1..maxlen)(face[i] = blank);
 % Her aim is to maximize the seductive power of the dance, which is given by the value of the
 % dance, plus the enticements of the dance minus the boredom level of Lu Bu multiplied by the length
 % of the dance.
-var int: obj = value + enticement - boredom*len;
+var int: obj = sum(value) + sum(enticement) - boredom*len;
 solve maximize obj;
 
 % output
-output ["len = \(len);\nlegs = \(legs);\narms = \(arms);\nface = \(face);\nobj = \(obj);\n" ];
+output ["len = \(len);\nlegs = \(legs);\narms = \(arms);\nface = \(face);\nobj = \(obj);\n"];
 
 
