@@ -39,6 +39,8 @@ constraint forall(i in 1..maxlen-1)(legs[i] = spin -> legs[i+1] in {curtsey, pre
 constraint forall(i in 1..maxlen-1)(legs[i] = leap -> legs[i+1] in {spin, waltz, stand});
 constraint forall(i in 1..maxlen-3)(sum(j in 0..3)(legs[i+j] = waltz) <= 3);
 constraint forall(i in 1..maxlen-1)(legs[i] = curtsey -> legs[i+1] != prep);
+constraint forall(i in 1..maxlen-1)(legs[i] = waltz -> legs[i+1] != curtsey);
+constraint forall(i in 1..maxlen-2, j in i+2..maxlen)((legs[i] = waltz /\ legs[j] = curtsey) -> exists(k in i+1..j-1)(legs[k] = stand));
 % TODO: stand btwn waltz and curtsey
 
 % She can beckon only directly after out or up (and hence not as the first move).
