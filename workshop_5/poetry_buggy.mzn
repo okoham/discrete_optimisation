@@ -34,14 +34,28 @@ output ["obj = \(obj);\nwhat = \(what);\nplace = \(place);\n"];% poetry
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ALL MODELLING ERRORS ARE BELOW THIS LINE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-constraint forall(i in ESSTANZA, j in POSN)(place[i] = j <-> what[j] = i);
 
-include "alldifferent.mzn";
-constraint alldifferent(what);
+% 'what' kann 0 enthalten. Dann ist der rechte Teil falsch, 
+% und damit der ganze Ausdruck. Das ist ok (relational semantics).
+% beide lösungen funktionieren.
+% constraint forall(i in ESSTANZA, j in POSN)(place[i] = j <-> what[j] = i);
+include "inverse_in_range.mzn";
+constraint inverse_in_range(place, what);
 
-constraint forall(p1, p2 in ESSTANZA where p1 < p2)
-                 (kind[p1] = kind[p2] -> abs(place[p1] - place[p2]) > 1);
 
-var int: obj = sum(p in 1..n-1)(abs(effect[what[p]] - effect[what[p+1]]));
+% include "alldifferent.mzn";
+% constraint alldifferent(what);
+include "alldifferent_except_0.mzn";
+constraint alldifferent_except_0(what);
+
+% geht das nicht einfacher? 
+constraint forall(p1, p2 in ESSTANZA where p1 < p2) (
+                   kind[p1] = kind[p2] -> abs(place[p1] - place[p2]) > 1);
+
+% der hier steigt aus wenn 'what' den wert 0 annimmt
+%var int: obj = sum(p in 1..n-1)(abs(effect[what[p]] - effect[what[p+1]]));
+var int: obj = sum(p in 1..n-1 where what[p] != 0 /\ what[p+1] != 0)
+                  (abs(effect[what[p]] - effect[what[p+1]]));
+
 
 solve maximize obj;
