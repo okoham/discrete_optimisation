@@ -26,39 +26,63 @@ set of int: STEP0 = 0..maxstep;
 var STEP: steps;
 array[ROW,COL] of var STEP0: visit; % which step do we visit position or 0 if not visited
 
+% new
+% enum AXIS = {X, Y};
+% array[STEP,AXIS] of var 1..max(nrow,ncol): route;
+% constraint forall(s in STEP)(route[s,1] <= nrow);
+% constraint forall(s in STEP)(route[s,2] <= ncol);
+% constraint forall(s in STEP, r in ROW, c in COL)(route[s,X] = r /\ route[s,Y] = c <-> visit[r,c] = s);
+
 % start at start position
 constraint visit[start_row,start_col] = 1;
 
 % only use steps moves
-constraint sum(r in ROW, c in COL)(visit[r,c] >= 1) <= steps;
+constraint sum(r in ROW, c in COL)(visit[r,c] >= 1) = steps;
+
 % reach Jin province
-constraint exists(r in ROW, c in COL)(Jin[r,c] /\ visit[r,c] >= 1);
+% constraint exists(r in ROW, c in COL)(Jin[r,c] /\ visit[r,c] >= 1);
+constraint sum(r in ROW, c in COL)(Jin[r,c] /\ visit[r,c] >= 1) = 1;
 
 
 % visit at most one city
-constraint not exists(r1,r2 in ROW, c1,c2 in COL)
-                     ((r1 != r2 \/ c1 != c2)
-                      /\ terrain[r1,c1] = C /\ terrain[r2,c2] = C
-                      /\ visit[r1,c1] >= 1 /\ visit[r2,c2] >= 1);
+% constraint not exists(r1,r2 in ROW, c1,c2 in COL)
+%                      ((r1 != r2 \/ c1 != c2)
+%                       /\ terrain[r1,c1] = C /\ terrain[r2,c2] = C
+%                       /\ visit[r1,c1] >= 1 /\ visit[r2,c2] >= 1);
+constraint sum(r in ROW, c in COL where terrain[r,c] = C)(visit[r,c] > 0) <= 1;
+
 
 % cant enter Mountain
-constraint not exists(r in ROW, c in COL)(terrain[r,c] = M /\ visit[r,c] >= 1);
+% constraint not exists(r in ROW, c in COL)(terrain[r,c] = M /\ visit[r,c] >= 1);
+constraint sum(r in ROW, c in COL where terrain[r,c] = M)(visit[r,c] > 0) = 0;
+
 
 % visit only one place in every step
-constraint forall(r1,r2 in ROW, c1,c2 in COL)
-                 (r1 != r2 \/ c1 != c2
-                  -> (visit[r1,c1] = 0
-                      \/ visit[r2,c2] != visit[r1,c1]));
+% constraint forall(r1,r2 in ROW, c1,c2 in COL)
+%                  (r1 != r2 \/ c1 != c2
+%                   -> (visit[r1,c1] = 0
+%                       \/ visit[r2,c2] != visit[r1,c1]));
+% hmm... nicht schneller.
+include "alldifferent_except_0.mzn";
+constraint alldifferent_except_0([visit[r,c] | r in ROW, c in COL]);
+%include "global_cardinality.mzn";
+%constraint global_cardinality([visit[r,c] | r in ROW, c in COL], [x|x in STEP], [1|x in STEP]);
+                 
+                                                                   
 % steps form a path
 constraint forall(s in 1..steps-1)
                  (exists(r1, r2 in ROW, c1, c2 in COL)
                         (abs(r1-r2) + abs(c1-c2) = 1
                          /\ visit[r1,c1] = s /\ visit[r2,c2] = s+1));
+%constraint forall(s in 1..steps-1)(abs(route[s+1,X]-route[s,X]) + abs(route[s+1,Y]-route[s,Y]) = 1);
+
+                                       
 % no shortcuts
 constraint forall(r1,r2 in ROW, c1,c2 in COL)
                  (abs(r1-r2) + abs(c1-c2) = 1 ->
                   visit[r1,c1] = 0 \/ visit[r2,c2] = 0 \/
                   abs(visit[r1,c1] - visit[r2,c2]) = 1);
+
 
 % not too much delay
 constraint time <= timelimit;
