@@ -1,5 +1,5 @@
 /*
-Zweiter Versuch.
+Erster Versuch: läuft, aber nicht richtig. und zu langsam.
 */
 
 int: T; % maximum time allowed;
