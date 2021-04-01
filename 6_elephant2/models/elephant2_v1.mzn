@@ -72,9 +72,9 @@ constraint forall(t in TIME0)(guards_on_boat[t] <= p);
 % stones on boat after a step
 array[TIME0] of var STONE: stones_on_boat;
 constraint stones_on_boat[0] = 0 /\ forall(t in TIME)(t >= end -> stones_on_boat[t] >= E);
-constraint forall(t in TIME)
+constraint forall(t in TIME) (
                  (stones_on_boat[t] = stones_on_boat[t-1] 
-                                    + sum([ if act[g,t] > 0 then act[g,t] else 0 endif | g in GUARD ]));
+                                    + sum([ trace("g=\(g), t=\(t), \(if act[g,t] > 0 then act[g,t] else 0 endif)\n", if act[g,t] > 0 then act[g,t] else 0 endif) | g in GUARD ])));
 
 % during a step, movement in one direction only
 constraint forall(t in TIME)
@@ -111,8 +111,8 @@ output ["act = array2d(GUARD,TIME,[\n"] ++
 % end = 3;
 
 % ex2      
-% act = array2d(GUARD,TIME,[
-% 0,   0, 5, -1, 10,  0, 0,0,0,0,
-% 15, -1, 0,  0,  0, 15, 0,0,0,0]);
-% end = 6;
+act = array2d(GUARD,TIME,[
+0,   0, 5, -1, 10,  0, 0,0,0,0,
+15, -1, 0,  0,  0, 15, 0,0,0,0]);
+end = 6;
 

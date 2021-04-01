@@ -7,10 +7,9 @@ tired = [3,4];
 p = 1;
 b = 2;
 
-/*
-an example solution is
+
+% an example solution is
 act = array2d(GUARD,TIME,[
 0,   0, 5, -1, 10,  0, 0,0,0,0,
 15, -1, 0,  0,  0, 15, 0,0,0,0]);
 end = 6;
-*/
