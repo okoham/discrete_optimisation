@@ -48,9 +48,19 @@ constraint forall(t in TIME, g in GUARD)(act[g,t] <= hard[g]);
 % people on pier during a step
 constraint forall(t in TIME)(count(g in GUARD)((act[g,t] != 0)) <= p);
 
+% this version is slower
+%include "global_cardinality_low_up.mzn";
+% at least G-p waiting actions <-> at most p people on pier
+% constraint forall(t in TIME)
+%                  (global_cardinality_low_up(col(act, t), [wait], [G-p], [G]));
+
 % people on boat after a step
 constraint forall(t in TIME0)(count(g in GUARD)(guardpos[g,t] = boat) <= b);
- 
+
+% this version is slower
+% constraint forall(t in TIME)
+%                  (global_cardinality_low_up(col(guardpos, t), [boat], [0], [b]));
+                                  
 % stones on boat after a step. there may be more than E stones on the boat!                                   
 predicate sufficient_stones(TIME: t) = 
     sum(g in GUARD, tx in 1..t)(act[g,tx]*(act[g,tx] > 0)) >= E;
@@ -79,9 +89,6 @@ constraint forall(g in GUARD, t in TIME)
 % After the end time each guard must only wait.
 constraint forall(t in TIME, g in GUARD)(t > end -> act[g,t] = wait);
 
-% guards can carry up to hard stones.
-constraint forall(t in TIME, g in GUARD)(act[g,t] <= hard[g]);
-
 solve minimize end;
 
 output ["act = array2d(GUARD,TIME,[\n"] ++ 
@@ -97,4 +104,3 @@ output ["act = array2d(GUARD,TIME,[\n"] ++
        %["maxstones = \(maxstones);\n"] ++
        [""];
        
-% TODO: symmetriy braking (it doesn't matter which guard does what - introduce some orderung etc.

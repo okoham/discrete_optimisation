@@ -1,19 +1,27 @@
 {
-	"projectFiles": [
-		"models/elephant2.mzn",
-		"data/elephant2_3.dzn",
-		"data/elephant2_2.dzn",
-		"data/elephant2_1.dzn",
-		"data/elephant2_6.dzn",
-		"data/elephant2_10.dzn",
-		"data/elephant2_9.dzn",
-		"_mooc"
-	],
-	"openFiles": [
-		"models/elephant2.mzn"
-	],
-	"openTab": 0,
-	"version": 106,
-	"selectedBuiltinConfigId": "org.gecode.gecode",
-	"selectedBuiltinConfigVersion": "6.3.0"
+    "openFiles": [
+        "ex1.dzn",
+        "data/elephant2_1.dzn",
+        "data/elephant2_2.dzn",
+        "ex2.dzn",
+        "data/elephant2_10.dzn",
+        "data/elephant2_3.dzn",
+        "data/elephant2_6.dzn"
+    ],
+    "openTab": 0,
+    "projectFiles": [
+        "_mooc",
+        "data/elephant2_1.dzn",
+        "data/elephant2_10.dzn",
+        "data/elephant2_2.dzn",
+        "data/elephant2_3.dzn",
+        "data/elephant2_6.dzn",
+        "data/elephant2_9.dzn",
+        "ex1.dzn",
+        "ex2.dzn",
+        "models/elephant2_gc.mzn"
+    ],
+    "selectedBuiltinConfigId": "org.gecode.gecode",
+    "selectedBuiltinConfigVersion": "6.3.0",
+    "version": 106
 }
