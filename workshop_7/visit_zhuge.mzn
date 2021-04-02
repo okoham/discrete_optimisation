@@ -33,7 +33,9 @@ constraint forall(p in PERSON)
                                        (let {var 0..6: dow = (start[p] + starting_day + t) mod 7} in 
                                        dow in {0, 1, 2, 3, 4})
            );
-
+% in the solution video, they did this differently. They created additional tasks (weekend tasks),
+% and assigned them to the people who can't be visited on weekends, then created another disjunctive
+% constraint.
 
 % rank violations
 % compare all pairs of persons. count instances where start[p1] < start[p2] and rank[p1] > rank[p2]
@@ -41,11 +43,12 @@ var int: rank_violation;
 rank_violation = count(p1, p2 in PERSON)
                       (start[p1] < start[p2] /\ rank[p1] > rank[p2]);
 
-       
 % solve    
-% solve satisfy;
-solve minimize end;
-
+% solve minimize end;
+% in the solution video, the minimised card(PERSON)*card(PERSON)*end + rank_violation
+% as multiplier, use any number that is big enough (> max possible value of rank violation).
+% with this approach, we always minimise ent time before worrying about rank violations
+solve minimize card(PERSON)*card(PERSON)*end + rank_violation;
 
 % output 
 output ["start = \(start);\nend = \(end);\nrank_violation = \(rank_violation);\n"];
