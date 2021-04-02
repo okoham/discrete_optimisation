@@ -1,4 +1,4 @@
-PERSON = { CuiZhouping, MengJian, ShiTao, LiuBiao, SimaHui, PangDegong,
+PERSON = {CuiZhouping, MengJian, ShiTao, LiuBiao, SimaHui, PangDegong,
                 HuangChengyan, HuangYueying, ZhugeLiang};
 
 duration = [ 2, 4, 3, 5, 3, 2, 3, 4, 5 ];
