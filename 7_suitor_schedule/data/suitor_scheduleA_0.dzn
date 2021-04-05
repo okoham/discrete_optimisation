@@ -29,3 +29,9 @@ minsep = 2;
 usedstart = [ 10, 12, 14 ];
 useddur   = [ 1, 2, 1 ];
 
+% possible solution
+% start = [32, 8, 16, 12, 13, 36];
+% dur = [4, 4, 1, 1, 3, 3];
+% room = [Blue, Blue, Blue, Blue, Red, Red];
+% kungfu = [49, 49, 49, 49, 49, 49];
+% obj = 8;

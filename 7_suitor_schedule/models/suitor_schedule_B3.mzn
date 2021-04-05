@@ -15,31 +15,6 @@
 
 % next works better than order/argsort
 
-/* submission on 05.04., 07:00:
-A1: Your submission is not a feasible solution to the problem. 
-The solution checker reported:
-ERROR: meeting 2 starts at hour 0 before earliest end time = 8
-
-A2: Congratulations! Your submission is a feasible solution and the objective value
- of 16.0 is sufficient for full credit.
-
-B1: Congratulations! Your submission is a feasible solution and the objective value 
-of 8.0 is sufficient for full credit.
-
-B2: Your submission is not a feasible solution to the problem. 
-The solution checker reported:
-ERROR: meeting 10 starts at hour 0 before earliest end time = 8
-ERROR: Calculated objective 1007 does not agree with given value 27
-
-Model A: Your submission is not a feasible solution to the problem. 
-The solution checker reported:
-ERROR: meeting 5 starts at hour 0 before earliest end time = 8
-
-Model B: Your submission is not a feasible solution to the problem. 
-The solution checker reported:
-ERROR: meeting 5 starts at hour 0 before earliest end time = 8
-*/
-
 % scheduling suitors
 enum SUITOR;
 SUITOR: LiuBei; % which suitor is LiuBei
@@ -86,35 +61,20 @@ include "globals.mzn";
 % temporary workaround for kungfu
 constraint stage in {A, B} /\ forall(k in KUNGFU)(kungfu[k] = 1 + 24*ndays);
 
-% dummy meetings and next array ersect
-int: nr = card(ROOM);
+% dummy meetings and next array 
+% int: dummy = 0;
+% set of int: MEETINGE = 0..n; % add dummy meeting
+% array[MEETING] of var MEETINGE: next; % next meeting
+% constraint alldifferent(next);
+% array[1..n] of var MEETING: order = arg_sort(start);
+
+% assignments
+% int: nR = card(ROOM);
 
 % number of jobs: meetings plus blocked time per room
-int: numjobs = n + 2*ndays + ndays;
-set of int: JOB = 1..numjobs;
+int: numjobs = n;
 array[MEETING, ROOM] of var 0..1: assignment;
-constraint forall(m in MEETING, r in ROOM)(assignment[m,r] = 1 <-> room[m] = r);
-constraint forall(m in MEETING)(sum(r in ROOM)(assignment[m,r]) = 1);
-%array[JOB] of var 0..1: resource = [1 | x in JOB]; % one resource - Sun? Needed at all?
-
-predicate cum(ROOM: r) = 
-    let {
-        array[JOB] of var TIME: startx = start ++ 
-                                [(d-1)*24 | d in DAY] ++ 
-                                [(d-1)*24 + usedstart[r] | d in DAY] ++
-                                [(d-1)*24 + latest | d in DAY];
-        array[JOB] of var TIME: durx = dur ++ 
-                                [earliest | d in DAY] ++ 
-                                [useddur[r] | d in DAY] ++
-                                [24 - latest | d in DAY];
-        array[JOB] of var TIME: res = col(assignment, r) ++ 
-                                [1 | d in DAY] ++
-                                [1 | d in DAY] ++
-                                [1 | d in DAY];
-    } in cumulative(startx, durx, res, 1);
-    
-constraint forall(r in ROOM)(cum(r));
-
+array[MEETING] of 0..1: resource = [1 | x in MEETING]; % one resource - Sun?
 
 % meeting durations are not fixed! they have a min/max depending on suitor and room.
 constraint forall(m in MEETING)
@@ -140,34 +100,32 @@ predicate prec(int: job1, int: job2,
 
 
 % earliest start / latest end 
-% constraint forall(m in MEETING)
-%                  (let {var int: d = start[m] div 24;} in
-%                  start[m] >= 24*d + earliest /\ 
-%                  (start[m] + dur[m]) <= 24*d + latest);
-
-
+constraint forall(m in MEETING)
+                 (let {var int: d = start[m] div 24;} in
+                 start[m] >= 24*d + earliest /\ 
+                 (start[m] + dur[m]) <= 24*d + latest);
 
 % basic stuff
-% constraint 
-%     cumulative(start, dur, resource, nr)
+constraint 
+    cumulative(start, dur, resource, 1)
            
-%     /\ % assignments
-%     forall(m in MEETING) (
-%         resource[m] = sum(r in ROOM)(assignment[m,r] = 1) 
-%         /\
-%         % if a room is assigned to two meetings, these meetings cannot overlap
-%         forall(m2 in MEETING where m < m2) (
-%             exists(r in ROOM) (assignment[m,r] + assignment[m2,r] = 2)
-%                 -> nonoverlap(start[m], dur[m], start[m2], dur[m2]))
-%         /\
-%         % if resources of two jobs > total then they cannot overlap
-%         forall(m2 in MEETING where m < m2) (
-%             if resource[m] + resource[m2] > nr then
-%                 nonoverlap(start[m], dur[m], start[m2], dur[m2])
-%             else
-%                 true
-%             endif)
-%     );
+    /\ % assignments
+    forall(m in MEETING) (
+        resource[m] = sum(r in ROOM)(assignment[m,r] = 1) 
+        /\
+        % if a room is assigned to two meetings, these meetings cannot overlap
+        forall(m2 in MEETING where m < m2) (
+            exists(r in ROOM) (assignment[m,r] + assignment[m2,r] = 2)
+                -> nonoverlap(start[m], dur[m], start[m2], dur[m2]))
+        /\
+        % if resources of two jobs > total then they cannot overlap
+        forall(m2 in MEETING where m < m2) (
+            if resource[m] + resource[m2] > 1 then
+                nonoverlap(start[m], dur[m], start[m2], dur[m2])
+            else
+                true
+            endif)
+    );
 
 
 % TODO: can we include this into the disjunctive?
@@ -179,9 +137,6 @@ predicate time_between(var TIME: s1, var int: d1, var TIME: s2, var int: gap) =
 
 % constraint stage in {B, C} -> forall(m in MEETING where next[m] != dummy)
 %    (time_between(start[m], dur[m], start[next[m]], move[room[m], room[next[m]]]));
-% constraint stage = A -> forall(m1, m2 in MEETING)
-%    (start[m1] < start[m2] -> 
-%    time_between(start[m1], dur[m1], start[m2], ));
 
 constraint stage in {B, C} -> forall(m1, m2 in MEETING)
    (start[m1] < start[m2] -> 
@@ -194,18 +149,15 @@ constraint stage in {B, C} -> forall(m1, m2 in MEETING)
 %     } in 
 %   time_between(start[i1], dur[i1], start[i2], move[room[i1], room[i2]]));
 
-% predicate freeroom(var TIME: begin, var int: duration, var ROOM: r) = 
-%   let {
-%     var int: sm = begin mod 24;
-%   } in %nonoverlap(sm, duration, 0, earliest) /\
-%        %nonoverlap(sm, duration, latest, 24-latest) /\
-%        nonoverlap(sm, duration, usedstart[r], useddur[r]);
+predicate freeroom(var TIME: begin, var int: duration, var ROOM: r) = 
+  let {
+    var int: sm = begin mod 24;
+  } in %nonoverlap(sm, duration, 0, earliest) /\
+       %nonoverlap(sm, duration, latest, 24-latest) /\
+       nonoverlap(sm, duration, usedstart[r], useddur[r]);
 
-% constraint forall(i in MEETING)(freeroom(start[i], dur[i], room[i]));
+constraint forall(i in MEETING)(freeroom(start[i], dur[i], room[i]));
 
-% symmetry breaking
-constraint forall(m1, m2 in MEETING where m1 < m2) (
-    suitor[m1] = suitor[m2] -> start[m1] < start[m2]);
 
 % Solution
 % the objective value which is 100 for each kung fu lesson scheduled in the given 
@@ -218,18 +170,9 @@ var 0..omax: obj = sum(i in MEETING where suitor[i] = LiuBei)(dur[i]);
 solve maximize obj;
 
 
-array[ROOM] of string: sroom = ["R", "G", "B"];
-
-predicate room_booked(TIME: t, ROOM: r) = 
-  let {TIME: dt = t mod 24;} in
-  dt < earliest \/ 
-  dt >= latest \/
-  (dt >= usedstart[r] /\ dt < usedstart[r] + useddur[r]) ;
-
-
-array[STIME] of var 0..n: X;
-constraint forall(i in MEETING, t in STIME)
-                 (start[i] <= t /\ start[i] + dur[i] > t <-> X[t] = i);  
+% array[STIME] of var 0..n: X;
+% constraint forall(i in MEETING, t in STIME)
+%                  (start[i] <= t /\ start[i] + dur[i] > t <-> X[t] = i);  
 
 output ["start = \(start);\n"] ++
        ["dur = \(dur);\n"] ++
@@ -240,18 +183,19 @@ output ["start = \(start);\n"] ++
 %        ["next = \(next);\n"] ++
        ["obj = \(obj);\n"]  ++
 
-       ["\n"] ++
-       ["  t D     H RBL ii SU RM\n"] ++
-       [if true then % t mod 24 in earliest-1..latest then
-          show_int(3, t) ++ 
-          show_int(2, 1 + t div 24) ++ 
-          show_int(3, t mod 24) ++ "-" ++ show_int(2, 1 + t mod 24) ++
-          " " ++ concat([if room_booked(t, r) then sroom[r] else "." endif | r in ROOM]) ++
-          if fix(X[t] > 0) then show_int(3, X[t]) else "   " endif ++   % meeting number
-          if fix(X[t] > 0) then " " ++ show(suitor[X[t]]) else "  " endif ++
-          if fix(X[t] > 0) then " " ++ show(room[X[t]]) else "    " endif ++
-          "\n"
-        else "" endif
-        | t in STIME] ++
+%        ["\n"] ++
+%        ["  t D     H  i SU  RM\n"] ++
+%        [if true then % t mod 24 in earliest-1..latest then
+%           show_int(3, t) ++ 
+%           show_int(2, 1 + t div 24) ++ 
+%           show_int(3, t mod 24) ++ "-" ++ show_int(2, 1 + t mod 24) ++
+%           let {int: dt = t mod 24;} in 
+%               if dt<earliest \/ dt>=latest then " X" else "  " endif ++ 
+%           if fix(X[t] > 0) then show_int(3, X[t]) else "   " endif ++   % meeting number
+%           if fix(X[t] > 0) then " " ++ show(suitor[X[t]]) else "  " endif ++
+%           if fix(X[t] > 0) then " " ++ show(room[X[t]]) else "    " endif ++
+%           "\n"
+%         else "" endif
+%         | t in STIME] ++
 
        [];
