@@ -1,7 +1,11 @@
 {
     "openFiles": [
-        "data/suitor_scheduleB_3.dzn",
-        "models/suitor_schedule.mzn"
+        "data/suitor_scheduleA_5.dzn",
+        "models/suitor_schedule.mzn",
+        "models/suitor_schedule_B1.mzn",
+        "models/suitor_schedule_B2.mzn",
+        "models/suitor_schedule_B3.mzn",
+        "models/suitor_schedule_B4.mzn"
     ],
     "openTab": 1,
     "projectFiles": [
@@ -26,7 +30,12 @@
         "data/suitor_scheduleC_5.dzn",
         "models/suitor_schedule.mzn",
         "models/suitor_schedule_A.mzn",
-        "models/suitor_schedule_B1.mzn"
+        "models/suitor_schedule_B1.mzn",
+        "models/suitor_schedule_B2.mzn",
+        "models/suitor_schedule_B3.mzn",
+        "models/suitor_schedule_B4.mzn",
+        "models/suitor_schedule_B5.mzn",
+        "models/suitor_schedule_C1.mzn"
     ],
     "selectedBuiltinConfigId": "org.gecode.gecode",
     "selectedBuiltinConfigVersion": "6.3.0",

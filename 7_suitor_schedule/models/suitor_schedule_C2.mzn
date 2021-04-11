@@ -64,6 +64,7 @@ array[MEETING] of var ROOM: room;
 set of int: KUNGFU = 1..n;
 %array[KUNGFU] of var int: kungfu;  % start time for each lesson
 array[KUNGFU] of var 0..24*ndays+1: kungfu;  % start time for each lesson
+% unused kungfu lessons have start times after 24*ndays
 
 include "globals.mzn";
 
@@ -126,6 +127,8 @@ set of int: MEETING0 = 0..n;
 array[KUNGFU] of var MEETING0: k2m;
 constraint forall(m in MEETING, k in KUNGFU)(m2k[m] = k <-> k2m[k] = m);
 
+% kungfu can happend at begin or end of meeting
+array[KUNGFU] of var 0..1: kungfu_at_end;
 
 % stages A and B
 constraint stage in {A, B} -> forall(k in KUNGFU)(kungfu[k] = 1 + 24*ndays /\ k2m[k] = 0);
@@ -135,8 +138,8 @@ constraint stage = C -> forall(k in KUNGFU)
   (kungfu[k] = if 
                  k2m[k] > 0 
                then 
-                 % start of kungfu at so that at end of meeting
-                 start[k2m[k]] + dur[k2m[k]] - lessontime
+                 % start of kungfu at so that at begin or end of meeting
+                 start[k2m[k]] + kungfu_at_end[k] * (dur[k2m[k]] - lessontime)
                else 
                  % start after planning period
                  1 + 24*ndays 

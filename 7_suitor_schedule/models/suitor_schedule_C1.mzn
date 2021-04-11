@@ -15,29 +15,8 @@
 
 % next works better than order/argsort
 
-/* submission on 05.04., 07:00:
-A1 (A0): Your submission is not a feasible solution to the problem. 
-The solution checker reported:
-ERROR: meeting 2 starts at hour 0 before earliest end time = 8
-
-A2 (A3): Congratulations! Your submission is a feasible solution and the objective value
- of 16.0 is sufficient for full credit.
-
-B1 (B2): Congratulations! Your submission is a feasible solution and the objective value 
-of 8.0 is sufficient for full credit.
-
-B2 (B4): Your submission is not a feasible solution to the problem. 
-The solution checker reported:
-ERROR: meeting 10 starts at hour 0 before earliest end time = 8
-ERROR: Calculated objective 1007 does not agree with given value 27
-
-Model A: Your submission is not a feasible solution to the problem. 
-The solution checker reported:
-ERROR: meeting 5 starts at hour 0 before earliest end time = 8
-
-Model B: Your submission is not a feasible solution to the problem. 
-The solution checker reported:
-ERROR: meeting 5 starts at hour 0 before earliest end time = 8
+/* submission on 05.04., 07:35:
+passed A1 (obj=8), A2 (obj=8), B1 (obj=8), B2 (obj=26)
 */
 
 % scheduling suitors
@@ -74,46 +53,52 @@ STAGE: stage;
 set of int: TIME = 0..24*ndays; % only start times, or also end times???
 set of int: STIME = 0..24*ndays-1;
 
-array[MEETING] of var TIME: start;
+array[MEETING] of var STIME: start;
 array[MEETING] of var TIME: dur;    % duration in false schedule
 array[MEETING] of var ROOM: room;
 set of int: KUNGFU = 1..n;
-array[KUNGFU] of var int: kungfu;  % start time for each lesson
+array[KUNGFU] of var 0..24*ndays + n*(lessontime + minsep): kungfu;  % start time for each lesson
 % unused kungfu lessons have start times after 24*ndays
 
 include "globals.mzn";
 
-% temporary workaround for kungfu
-constraint stage in {A, B} /\ forall(k in KUNGFU)(kungfu[k] = 1 + 24*ndays);
 
 % dummy meetings and next array ersect
-int: nr = card(ROOM);
+% int: nr = card(ROOM);
 
 % number of jobs: meetings plus blocked time per room
 int: numjobs = n + 2*ndays + ndays;
 set of int: JOB = 1..numjobs;
-array[MEETING, ROOM] of var 0..1: assignment;
-constraint forall(m in MEETING, r in ROOM)(assignment[m,r] = 1 <-> room[m] = r);
-constraint forall(m in MEETING)(sum(r in ROOM)(assignment[m,r]) = 1);
-%array[JOB] of var 0..1: resource = [1 | x in JOB]; % one resource - Sun? Needed at all?
+% array[MEETING, ROOM] of var 0..1: assignment;
+% constraint forall(m in MEETING, r in ROOM)(assignment[m,r] = 1 <-> room[m] = r);
+% constraint forall(m in MEETING)(sum(r in ROOM)(assignment[m,r]) = 1);
 
+% resources: rooms
 predicate cum(ROOM: r) = 
     let {
-        array[JOB] of var TIME: startx = start ++ 
-                                [(d-1)*24 | d in DAY] ++ 
-                                [(d-1)*24 + usedstart[r] | d in DAY] ++
-                                [(d-1)*24 + latest | d in DAY];
-        array[JOB] of var TIME: durx = dur ++ 
+        array[JOB] of var TIME: startx = 
+                                start ++                                   % meetings
+                                [(d-1)*24 | d in DAY] ++                   % morning
+                                [(d-1)*24 + usedstart[r] | d in DAY] ++    % noon
+                                [(d-1)*24 + latest | d in DAY];            % evening
+        array[JOB] of var TIME: durx = 
+                                dur ++ 
                                 [earliest | d in DAY] ++ 
                                 [useddur[r] | d in DAY] ++
                                 [24 - latest | d in DAY];
-        array[JOB] of var TIME: res = col(assignment, r) ++ 
+        array[JOB] of var 0..1: res = 
+                                % col(assignment, r) ++ 
+                                [if room[m] = r then 1 else 0 endif | m in MEETING] ++ 
                                 [1 | d in DAY] ++
                                 [1 | d in DAY] ++
                                 [1 | d in DAY];
     } in cumulative(startx, durx, res, 1);
     
 constraint forall(r in ROOM)(cum(r));
+
+% resources: Sun
+constraint cumulative(start, dur, [1 | m in MEETING], 1);
+
 
 
 % meeting durations are not fixed! they have a min/max depending on suitor and room.
@@ -174,7 +159,7 @@ predicate prec(int: job1, int: job2,
 % include "disjunctive.mzn";
 % constraint disjunctive(start, dur);
 
-predicate time_between(var TIME: s1, var int: d1, var TIME: s2, var int: gap) = 
+predicate time_between(var STIME: s1, var STIME: d1, var STIME: s2, var STIME: gap) = 
   s1 + d1 + gap <= s2;  
 
 % constraint stage in {B, C} -> forall(m in MEETING where next[m] != dummy)
@@ -183,9 +168,10 @@ predicate time_between(var TIME: s1, var int: d1, var TIME: s2, var int: gap) =
 %    (start[m1] < start[m2] -> 
 %    time_between(start[m1], dur[m1], start[m2], ));
 
-constraint stage in {B, C} -> forall(m1, m2 in MEETING)
+constraint forall(m1, m2 in MEETING)
    (start[m1] < start[m2] -> 
-   time_between(start[m1], dur[m1], start[m2], move[room[m1], room[m2]]));
+   time_between(start[m1], dur[m1], start[m2], 
+                if stage = A then 0 else move[room[m1], room[m2]] endif));
 
 % constraint stage in {B, C} -> forall(j in 1..n-1)
 %     (let {
@@ -206,18 +192,53 @@ constraint stage in {B, C} -> forall(m1, m2 in MEETING)
 % symmetry breaking
 constraint forall(m1, m2 in MEETING where m1 < m2) (
     suitor[m1] = suitor[m2] -> start[m1] < start[m2]);
+   
+ 
+% fung fu
+% temporary workaround for kungfu
+% kungfu kann nur am anfang oder ende des meetings stattfinden (sonst meeting unterbrochen)
+% mehr als 1 kungfu pro meeting ist ok.
+
+predicate kungfu_in_meeting(MEETING: m, var TIME: tk) = 
+    (tk >= start[m] /\ 
+     tk + lessontime <= start[m] + dur[m] /\
+     dur[m] - lessontime >= mintime[suitor[m], room[m]]
+    );
+   
+function var int: luibeitime(MEETING: m, TIME: tk) = 
+    if tk >= start[m] /\ tk + lessontime <= start[m] + dur[m] 
+    then dur[m] - lessontime
+    else 0
+    endif;
+ 
+constraint 
+    if stage in {A, B} then 
+        forall(kstart in kungfu)(kstart >= 1 + 24*ndays)
+    else
+        forall(k in 1..n-1)
+            (kungfu[k] + lessontime + minsep <= kungfu[k+1]) 
+        /\ forall(kstart in kungfu)
+            (kstart < 24*ndays -> exists(m in MEETING)(kungfu_in_meeting(m, kstart)))
+    endif;
+
 
 % Solution
 % the objective value which is 100 for each kung fu lesson scheduled in the given 
 % ndays plus the number of hours of meetings scheduled for Liu Bei
 % range: n*max(maxtime) + n*100
 % TODO for stage C: subtract kungfu time from liubei time
+
+
+
+
 int: omin = count(SUITOR, LiuBei)*min(row(mintime, LiuBei));
 int: omax = count(SUITOR, LiuBei)*max(row(maxtime, LiuBei)) + n*100;
-var 0..omax: obj = sum(i in MEETING where suitor[i] = LiuBei)(dur[i]);
+var 0..omax: obj = sum(m in MEETING where suitor[m] = LiuBei)(dur[m])
+                 - sum(m in MEETING where suitor[m] = LiuBei, k in KUNGFU)(luibeitime(m, k))
+                 + 100 * count(k in KUNGFU)(kungfu[k] + lessontime <= 24*ndays);
 solve maximize obj;
 
-
+% output stuff
 array[ROOM] of string: sroom = ["R", "G", "B"];
 
 predicate room_booked(TIME: t, ROOM: r) = 
@@ -226,10 +247,10 @@ predicate room_booked(TIME: t, ROOM: r) =
   dt >= latest \/
   (dt >= usedstart[r] /\ dt < usedstart[r] + useddur[r]) ;
 
-
-% array[STIME] of var 0..n: X;
-% constraint forall(i in MEETING, t in STIME)
-%                  (start[i] <= t /\ start[i] + dur[i] > t <-> X[t] = i);  
+var set of int: tk = {kungfu[k] + x | k in KUNGFU, x in 0..lessontime-1};
+array[STIME] of var 0..n: X;
+constraint forall(i in MEETING, t in STIME)
+                 (start[i] <= t /\ start[i] + dur[i] > t <-> X[t] = i);  
 
 output ["start = \(start);\n"] ++
        ["dur = \(dur);\n"] ++
@@ -240,18 +261,19 @@ output ["start = \(start);\n"] ++
 %        ["next = \(next);\n"] ++
        ["obj = \(obj);\n"]  ++
 
-%        ["\n"] ++
-%        ["  t D     H RBL ii SU RM\n"] ++
-%        [if true then % t mod 24 in earliest-1..latest then
-%           show_int(3, t) ++ 
-%           show_int(2, 1 + t div 24) ++ 
-%           show_int(3, t mod 24) ++ "-" ++ show_int(2, 1 + t mod 24) ++
-%           " " ++ concat([if room_booked(t, r) then sroom[r] else "." endif | r in ROOM]) ++
-%           if fix(X[t] > 0) then show_int(3, X[t]) else "   " endif ++   % meeting number
-%           if fix(X[t] > 0) then " " ++ show(suitor[X[t]]) else "  " endif ++
-%           if fix(X[t] > 0) then " " ++ show(room[X[t]]) else "    " endif ++
-%           "\n"
-%         else "" endif
-%         | t in STIME] ++
+       ["\n"] ++
+       ["  t D     H RBL ii SU RM\n"] ++
+       [if true then % t mod 24 in earliest-1..latest then
+          show_int(3, t) ++ 
+          show_int(2, 1 + t div 24) ++ 
+          show_int(3, t mod 24) ++ "-" ++ show_int(2, 1 + t mod 24) ++
+          " " ++ concat([if room_booked(t, r) then sroom[r] else "." endif | r in ROOM]) ++
+          if fix(X[t] > 0) then show_int(3, X[t]) else "   " endif ++   % meeting number
+          if fix(X[t] > 0) then " " ++ show(suitor[X[t]]) else "  " endif ++
+          if fix(X[t] > 0) then " " ++ show(room[X[t]]) else "    " endif ++
+          if t in fix(tk) then " K" else "  " endif ++
+          "\n"
+        else "" endif
+        | t in STIME] ++
 
        [];

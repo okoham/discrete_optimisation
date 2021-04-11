@@ -29,3 +29,8 @@ minsep = 2;
 usedstart = [ 10, 12, 14 ];
 useddur   = [ 1, 2, 1 ];
 
+% example solution
+% start = [8, 16, 36, 32, 13, 38];
+% dur = [4, 2, 2, 3, 3, 3];
+% room = [Blue, Red, Red, Gold, Red, Red];
+% kungfu = [11, 17, 34, 49, 52, 55];
