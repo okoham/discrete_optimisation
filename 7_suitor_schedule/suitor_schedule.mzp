@@ -1,13 +1,15 @@
 {
     "openFiles": [
         "data/suitor_scheduleA_5.dzn",
+        "models/suitor_schedule_B5.mzn",
         "models/suitor_schedule.mzn",
-        "models/suitor_schedule_B1.mzn",
-        "models/suitor_schedule_B2.mzn",
+        "models/suitor_schedule_B4.mzn",
         "models/suitor_schedule_B3.mzn",
-        "models/suitor_schedule_B4.mzn"
+        "models/suitor_schedule_B2.mzn",
+        "models/suitor_schedule_C1.mzn",
+        "data/suitor_scheduleA_0.dzn"
     ],
-    "openTab": 1,
+    "openTab": 2,
     "projectFiles": [
         "_mooc",
         "data/suitor_scheduleA_0.dzn",
